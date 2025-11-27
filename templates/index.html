@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Body Language Detector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #fafafa;
+            background-image:
+                linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: -1px -1px;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                padding: 48px 24px;
+            }
+        }
+
+        header {
+            margin-bottom: 48px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.6;
+            margin-bottom: 8px;
+        }
+
+        .description {
+            font-size: 15px;
+            opacity: 0.7;
+            max-width: 600px;
+            margin-top: 16px;
+        }
+
+        .main-content {
+            display: grid;
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        @media (min-width: 768px) {
+            .main-content {
+                grid-template-columns: 3fr 1fr;
+                gap: 32px;
+            }
+        }
+
+        .video-container {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 4/3;
+        }
+
+        #video-feed, #source-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        #source-video {
+            display: none;
+        }
+
+        .detection-panel {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 24px;
+            height: fit-content;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.4;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .emotion-display {
+            margin-bottom: 24px;
+        }
+
+        .emotion-label {
+            font-size: 13px;
+            opacity: 0.6;
+            margin-bottom: 6px;
+        }
+
+        .emotion-value {
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .confidence-bar-container {
+            width: 100%;
+            height: 4px;
+            background: #f0f0f0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .confidence-bar {
+            height: 100%;
+            background: #1a1a1a;
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .confidence-value {
+            font-size: 13px;
+            opacity: 0.6;
+            margin-top: 6px;
+        }
+
+        .stats-grid {
+            display: grid;
+            gap: 16px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.6;
+        }
+
+        .stat-value {
+            font-size: 14px;
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .pulse {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        footer {
+            margin-top: 64px;
+            padding-top: 24px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 13px;
+            opacity: 0.4;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 14px;
+            opacity: 0.6;
+        }
+
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 767px) {
+            h1 {
+                font-size: 28px;
+            }
+
+            .emotion-value {
+                font-size: 28px;
+            }
+
+            .container {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>BODY LANGUAGE DETECTOR</h1>
+            <p class="subtitle">Body language accounts for 55% of effective communication.<sup><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6127604/#b1-kjme-2018-94" target="_blank" style="color: inherit; text-decoration: none;">1</a></sup></p>
+            <p class="description">
+                This system analyzes facial expressions and body posture to detect emotions in real-time.
+                The model recognizes 10 different emotional states using pose and face landmarks.
+                Built with MediaPipe, OpenCV, and scikit-learn.
+            </p>
+        </header>
+
+        <div id="error-container"></div>
+
+        <div class="main-content">
+            <div class="video-container">
+                <video id="source-video" autoplay playsinline></video>
+                <canvas id="video-feed" width="640" height="480"></canvas>
+            </div>
+
+            <div class="detection-panel">
+                <div class="panel-title">
+                    <span class="pulse"></span>Live Detection
+                </div>
+
+                <div class="emotion-display">
+                    <div class="emotion-label">Current Emotion</div>
+                    <div class="emotion-value" id="emotion">Initializing...</div>
+                    <div class="confidence-bar-container">
+                        <div class="confidence-bar" id="confidence-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="confidence-value" id="confidence-text">0%</div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">Status</span>
+                        <span class="stat-value" id="status">Starting...</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Frame Rate</span>
+                        <span class="stat-value" id="fps">~10 fps</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Model</span>
+                        <span class="stat-value">Random Forest</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <footer>
+            <p>Created by <a href="https://jmccain.com" target="_blank" style="color: inherit; text-decoration: underline;">Jack McCain</a>.</p>
+        </footer>
+    </div>
+
+    <script>
+        const video = document.getElementById('source-video');
+        const canvas = document.getElementById('video-feed');
+        const ctx = canvas.getContext('2d');
+        let isProcessing = false;
+        let frameCount = 0;
+        let startTime = Date.now();
+
+        // Start webcam
+        async function startWebcam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'user'
+                    }
+                });
+
+                video.srcObject = stream;
+                document.getElementById('status').textContent = 'Active';
+
+                // Start processing frames
+                video.addEventListener('loadeddata', () => {
+                    processFrame();
+                });
+
+            } catch (err) {
+                console.error('Error accessing webcam:', err);
+                showError('Could not access webcam. Please grant camera permissions and refresh the page.');
+                document.getElementById('status').textContent = 'Error';
+            }
+        }
+
+        function showError(message) {
+            const errorContainer = document.getElementById('error-container');
+            errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+
+        async function processFrame() {
+            if (isProcessing) return;
+
+            isProcessing = true;
+
+            try {
+                // Draw video frame to canvas (mirror effect)
+                ctx.save();
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+                ctx.restore();
+
+                // Convert canvas to base64
+                const frameData = canvas.toDataURL('image/jpeg', 0.8);
+
+                // Send to server for processing
+                const response = await fetch('/process_frame', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ frame: frameData })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Display processed frame
+                    if (data.frame) {
+                        const img = new Image();
+                        img.onload = () => {
+                            ctx.save();
+                            ctx.scale(-1, 1);
+                            ctx.drawImage(img, -canvas.width, 0, canvas.width, canvas.height);
+                            ctx.restore();
+                        };
+                        img.src = 'data:image/jpeg;base64,' + data.frame;
+                    }
+
+                    // Update emotion display
+                    if (data.emotion) {
+                        document.getElementById('emotion').textContent = data.emotion;
+                        const confidencePercent = Math.round(data.confidence * 100);
+                        document.getElementById('confidence-bar').style.width = confidencePercent + '%';
+                        document.getElementById('confidence-text').textContent = confidencePercent + '%';
+                    }
+
+                    // Update FPS
+                    frameCount++;
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    if (elapsed > 1) {
+                        const fps = Math.round(frameCount / elapsed);
+                        document.getElementById('fps').textContent = `~${fps} fps`;
+                        frameCount = 0;
+                        startTime = Date.now();
+                    }
+                }
+
+            } catch (err) {
+                console.error('Error processing frame:', err);
+            }
+
+            isProcessing = false;
+
+            // Process next frame (adjust delay for desired FPS)
+            setTimeout(processFrame, 100); // ~10 FPS
+        }
+
+        // Start when page loads
+        window.addEventListener('load', startWebcam);
+    </script>
+</body>
+</html>
