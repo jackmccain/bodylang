@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["libGL", "glib", "libxcrypt-legacy"]
+nixPkgs = ["mesa", "libGLU", "glib", "libxcrypt-legacy", "xorg.libX11", "xorg.libXext"]
 
 [phases.install]
 cmds = ["pip install -r requirements.txt"]
