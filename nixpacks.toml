@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["libGL", "glib", "libxcrypt-legacy"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt"]
