@@ -1,2 +1,2 @@
 [phases.setup]
-nixPkgs = ["python312", "mesa", "libGLU", "glib", "libxcrypt-legacy", "xorg.libX11", "xorg.libXext"]
+nixPkgs = ["python312", "gcc", "mesa", "libGLU", "glib", "libxcrypt-legacy", "xorg.libX11", "xorg.libXext"]
