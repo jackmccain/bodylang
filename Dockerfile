@@ -15,6 +15,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
 COPY . .
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
-# Start command (Railway will provide PORT environment variable)
-CMD gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:$PORT --timeout 120 web_app:app
+# Use start.sh as entrypoint to properly handle environment variables
+ENTRYPOINT ["/app/start.sh"]
