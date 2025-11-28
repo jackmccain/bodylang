@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: body-language-detector
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 10000
