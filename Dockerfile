@@ -20,5 +20,5 @@ COPY . .
 ENV PORT=8080
 EXPOSE 8080
 
-# Start command
-CMD gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:$PORT --timeout 120 web_app:app
+# Start command (using shell form to allow variable expansion)
+CMD ["sh", "-c", "gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:${PORT} --timeout 120 web_app:app"]
