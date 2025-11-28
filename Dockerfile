@@ -16,9 +16,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application files
 COPY . .
 
-# Expose port
-ENV PORT=8080
-EXPOSE 8080
-
-# Start command (using shell form to allow variable expansion)
-CMD ["sh", "-c", "gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:${PORT} --timeout 120 web_app:app"]
+# Start command (Railway will provide PORT environment variable)
+CMD gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:$PORT --timeout 120 web_app:app
