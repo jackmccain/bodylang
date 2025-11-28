@@ -1,5 +1,2 @@
 [phases.setup]
 nixPkgs = ["python312", "glib", "libxcrypt-legacy", "mesa", "libGL"]
-
-[variables]
-LD_LIBRARY_PATH = "/root/.nix-profile/lib"
