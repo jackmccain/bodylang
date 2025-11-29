@@ -25,7 +25,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 current_emotion = "Waiting..."
 current_confidence = 0.0
 emotion_buffer = []  # For temporal smoothing
-BUFFER_SIZE = 5  # Number of frames to average
+BUFFER_SIZE = 1  # No averaging - immediate predictions
 
 # Initialize holistic model once for reuse
 holistic = mp_holistic.Holistic(
