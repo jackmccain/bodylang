@@ -195,6 +195,10 @@
             opacity: 0.4;
         }
 
+        footer a {
+            text-transform: lowercase;
+        }
+
         .loading {
             display: flex;
             align-items: center;
@@ -293,7 +297,12 @@
         const ctx = canvas.getContext('2d');
         let isProcessing = false;
         let frameCount = 0;
+        let displayFrameCount = 0;
         let startTime = Date.now();
+        let displayStartTime = Date.now();
+        let processedOverlay = null;
+        let lastEmotion = 'Initializing...';
+        let lastConfidence = 0;
 
         // Start webcam
         async function startWebcam() {
@@ -309,8 +318,9 @@
                 video.srcObject = stream;
                 document.getElementById('status').textContent = 'Active';
 
-                // Start processing frames
+                // Start continuous display and background processing
                 video.addEventListener('loadeddata', () => {
+                    renderLoop();
                     processFrame();
                 });
 
@@ -326,8 +336,35 @@
             errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
         }
 
+        // Continuous display loop at ~30 FPS
+        function renderLoop() {
+            // Draw raw video feed
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Overlay processed landmarks if available
+            if (processedOverlay) {
+                ctx.drawImage(processedOverlay, 0, 0, canvas.width, canvas.height);
+            }
+
+            // Update display FPS counter
+            displayFrameCount++;
+            const displayElapsed = (Date.now() - displayStartTime) / 1000;
+            if (displayElapsed > 1) {
+                const fps = Math.round(displayFrameCount / displayElapsed);
+                document.getElementById('fps').textContent = `~${fps} fps`;
+                displayFrameCount = 0;
+                displayStartTime = Date.now();
+            }
+
+            requestAnimationFrame(renderLoop);
+        }
+
+        // Background processing at ~7.5 FPS
         async function processFrame() {
-            if (isProcessing) return;
+            if (isProcessing) {
+                setTimeout(processFrame, 133);
+                return;
+            }
 
             isProcessing = true;
 
@@ -356,32 +393,23 @@
                 if (response.ok) {
                     const data = await response.json();
 
-                    // Display processed frame only
+                    // Store processed frame with landmarks as overlay
                     if (data.frame) {
                         const img = new Image();
                         img.onload = () => {
-                            ctx.clearRect(0, 0, canvas.width, canvas.height);
-                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            processedOverlay = img;
                         };
                         img.src = 'data:image/jpeg;base64,' + data.frame;
                     }
 
                     // Update emotion display
                     if (data.emotion) {
+                        lastEmotion = data.emotion;
+                        lastConfidence = data.confidence;
                         document.getElementById('emotion').textContent = data.emotion;
                         const confidencePercent = Math.round(data.confidence * 100);
                         document.getElementById('confidence-bar').style.width = confidencePercent + '%';
                         document.getElementById('confidence-text').textContent = confidencePercent + '%';
-                    }
-
-                    // Update FPS
-                    frameCount++;
-                    const elapsed = (Date.now() - startTime) / 1000;
-                    if (elapsed > 1) {
-                        const fps = Math.round(frameCount / elapsed);
-                        document.getElementById('fps').textContent = `~${fps} fps`;
-                        frameCount = 0;
-                        startTime = Date.now();
                     }
                 }
 
@@ -391,8 +419,8 @@
 
             isProcessing = false;
 
-            // Process next frame (adjust delay for desired FPS)
-            setTimeout(processFrame, 133); // ~7.5 FPS
+            // Process next frame at ~20 FPS
+            setTimeout(processFrame, 50);
         }
 
         // Start when page loads
