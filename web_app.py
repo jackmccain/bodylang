@@ -331,4 +331,4 @@ if __name__ == '__main__':
     print("Press Ctrl+C to stop the server")
     print("="*60 + "\n")
 
-    app.run(debug=False, threaded=False, host='0.0.0.0', port=port, use_reloader=False)
+    app.run(debug=False, threaded=True, host='0.0.0.0', port=port, use_reloader=False)
