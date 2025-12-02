@@ -34,6 +34,12 @@
             margin-bottom: 48px;
         }
 
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 24px;
+        }
+
         h1 {
             font-size: 32px;
             font-weight: 600;
@@ -237,6 +243,7 @@
 <body>
     <div class="container">
         <header>
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
             <h1>BODY LANGUAGE DETECTOR</h1>
             <p class="subtitle">Body language accounts for 55% of effective communication.<sup><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6127604/#b1-kjme-2018-94" target="_blank" style="color: inherit; text-decoration: none;">1</a></sup></p>
             <p class="description">
