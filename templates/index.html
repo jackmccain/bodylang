@@ -422,12 +422,12 @@
 
             } catch (err) {
                 console.error('Error processing frame:', err);
+            } finally {
+                isProcessing = false;
+
+                // Process next frame at ~20 FPS
+                setTimeout(processFrame, 50);
             }
-
-            isProcessing = false;
-
-            // Process next frame at ~20 FPS
-            setTimeout(processFrame, 50);
         }
 
         // Start when page loads
